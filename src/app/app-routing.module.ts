@@ -18,7 +18,8 @@ const routes: Routes = [
     canActivate: [RequireLoggedInGuard]
   },
   { path:'**',
-    component: NotFoundComponent
+    component: NotFoundComponent,
+    canActivate: [RequireLoggedInGuard]
   }
 ];
 

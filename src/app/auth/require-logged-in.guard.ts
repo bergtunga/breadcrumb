@@ -13,14 +13,15 @@ export class RequireLoggedInGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot):
     Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
+      //console.log("Activation attempt", route.url.join("/"));
       return this.serviceManager.isLoggedIn().then(
         (isLoggedIn) => {
           if(isLoggedIn){
             return true;
           }else{
             const attemptedLoc : string = state.url;
-            console.log(attemptedLoc);
-            return this.router.navigate(["/login"]);
+            console.log("attempted:",attemptedLoc);
+            return this.router.navigate(["/login"], {fragment: state.url});
           }
         }
       );

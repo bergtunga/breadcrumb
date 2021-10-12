@@ -37,18 +37,18 @@ export class LoginService implements OnInit {
       })
     //}, 5000);
   }
-  _doLogin(doRedirect: boolean){
+  _doLogin(redirect: string = "/breadcrumb"){
     signInWithPopup(this.auth, new GoogleAuthProvider()).then((uc: UserCredential) => {
       console.log("user = ", uc.user);
       this.username = uc.user.email;
       this.welcomeName = uc.user.displayName;
       this.id = uc.user.uid;
-      if(doRedirect)
-        this.router.navigate(["/breadcrumb"]);
+      this.router.navigate([redirect]);
     });
   }
-  doLogin(){ this._doLogin(false); }
-  doLoginWithRedirect(){ this._doLogin(true); }
+  doLogin(redirect: string){ this._doLogin(redirect); }
+  doLoginWithRedirect(){ this._doLogin(); }
+
   doLogout(){
     signOut(this.auth).then(
       () => {

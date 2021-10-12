@@ -21,9 +21,9 @@ import { Firestore,
   DocumentReference,
   docSnapshots,
   provideFirestore,
-getFirestore,
-connectFirestoreEmulator,
-enableIndexedDbPersistence } from '@angular/fire/firestore';
+  getFirestore,
+  connectFirestoreEmulator,
+  enableIndexedDbPersistence } from '@angular/fire/firestore';
 import { 
   provideStorage,
   getStorage } from '@angular/fire/storage'
