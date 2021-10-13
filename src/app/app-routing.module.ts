@@ -4,6 +4,9 @@ import { LoginComponent } from './auth/login.component';
 import { RequireLoggedInGuard } from './auth/require-logged-in.guard';
 import { RequireLoggedOutGuard } from './auth/require-logged-out.guard';
 import { BreadcrumbComponent } from './breadcrumb/breadcrumb.component';
+import { HelpComponent } from './breadcrumb/help/help.component';
+import { RoomComponent } from './breadcrumb/room/room.component';
+import { SettingsComponent } from './breadcrumb/settings/settings.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 
 const routes: Routes = [
@@ -15,7 +18,13 @@ const routes: Routes = [
   },
   {path: 'breadcrumb',
     component: BreadcrumbComponent,
-    canActivate: [RequireLoggedInGuard]
+    canActivate: [RequireLoggedInGuard],
+    //canActivateChild: [RequireLoggedInGuard],
+    children:[
+      { path: '',         component: HelpComponent, pathMatch: 'full'},
+      { path: 'settings', component: SettingsComponent },
+      { path: ':roomID',  component: RoomComponent }
+    ]
   },
   { path:'**',
     component: NotFoundComponent,

@@ -16,7 +16,7 @@ import { Observable, firstValueFrom } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
-export class LoginService implements OnInit {
+export class LoginService {
   user$: Observable<User | null>;
   username: String | null = null; 
   welcomeName: String | null = null; 
@@ -24,19 +24,45 @@ export class LoginService implements OnInit {
 
   constructor(private auth: Auth, private router: Router) {
     this.user$ = user(this.auth);
-  }
-
-  ngOnInit(){
-    //TODO: check cookies for valid login
-    this.user$.subscribe((input) => {
-      console.log("subscribed to: ", input);
+    firstValueFrom(this.user$).then((cu) =>{
+      console.log(cu);
+      if(!cu){
+        this.doLogout();
+        console.log("shouldnt happen");
+      }else{
+        this.username = cu.email;
+        this.welcomeName = cu.displayName;
+        this.id = cu.uid;
+      }
     });
-    //setTimeout(()=>{
-      this.auth.onAuthStateChanged((content) => {
-        console.log("content of auth change = ", content);
-      })
-    //}, 5000);
   }
+/* ngOnInit does not get called for services */
+  // ngOnInit() : void {
+  //   //TODO: check cookies for valid login
+  //   // this.user$.subscribe((input) => {
+  //   //   console.log("subscribed to: ", input);
+  //   // });
+  //   // //setTimeout(()=>{
+  //   //   this.auth.onAuthStateChanged((content) => {
+  //   //     console.log("content of auth change = ", content);
+  //   //   })
+  //   // //}, 5000);
+  //   // firstValueFrom(this.user$).then((cu) =>{
+  //   //   console.log("fvf");
+  //   //   //if(log){
+  //   //   //  let cu = this.auth.currentUser as User;
+  //   //   if(!cu){
+  //   //     this.doLogout();
+  //   //     console.log("shouldnt happen");
+  //   //   }else{
+  //   //     this.username = cu.email;
+  //   //     this.welcomeName = cu.displayName;
+  //   //     this.id = cu.uid;
+  //   //   }
+  //   // }
+  //   // });
+  // }
+
   _doLogin(redirect: string = "/breadcrumb"){
     signInWithPopup(this.auth, new GoogleAuthProvider()).then((uc: UserCredential) => {
       console.log("user = ", uc.user);

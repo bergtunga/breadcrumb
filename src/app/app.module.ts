@@ -28,6 +28,8 @@ import {
   provideStorage,
   getStorage } from '@angular/fire/storage'
 import { provideAuth, getAuth} from '@angular/fire/auth';
+import { HelpComponent } from './breadcrumb/help/help.component';
+import { FormsModule } from '@angular/forms';
 
 //  import { AngularFireModule } from '@angular/fire';
 //  import { AngularFirestoreModule } from '@angular/fire/firestore';
@@ -42,14 +44,16 @@ import { provideAuth, getAuth} from '@angular/fire/auth';
     RoomComponent,
     MessageComponent,
     SettingsComponent,
-    NotFoundComponent
+    NotFoundComponent,
+    HelpComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
+    FormsModule,
+
     //https://github.com/angular/angularfire/blob/master/docs/version-7-upgrade.md
     provideFirebaseApp(() => initializeApp(environment.firebase)),
-    
     //Temp
     provideFirestore(() => {
         const firestore = getFirestore();
@@ -59,7 +63,6 @@ import { provideAuth, getAuth} from '@angular/fire/auth';
     }),
     //Production?
     //provideFirestore(() => getFirestore()),
-
     provideStorage(() => getStorage()),
     provideAuth(() => getAuth())
     // end firebase

@@ -1,0 +1,66 @@
+.room-list-link {
+    /* margin: 5px 5px 0px 5px; */
+    text-align: left;
+    /* padding: 12px; */
+    --text-color: #aaa;
+    --pulse-color-alpha: rgba(221, 221, 221, 0.7);
+    --pulse-color: rgba(221, 221, 221, 0);
+}
+/* .room-link { /* Sepia * /
+    background-color: rgb(100, 100, 89);
+    color:rgb(211, 211, 187);
+}  */
+.settings-link {
+    background-color: #333;
+    color: #aaa;
+    text-align: right;
+}
+/*.app-content {
+    background-color: #222;
+    /* flex-direction: column;
+    display: flex; * /
+}*/
+:root {
+    
+}
+.notify {
+    animation: animate 3s linear infinite
+}
+@keyframes animate {
+    0% {
+        box-shadow: 0 0 0 0 var(--pulse-color-alpha), 0 0 0 0 var(--pulse-color-alpha);
+    }
+
+    40% {
+        box-shadow: 0 0 0 50px var(--pulse-color), 0 0 0 0 var(--pulse-color-alpha);
+    }
+
+    80% {
+        box-shadow: 0 0 0 50px var(--pulse-color), 0 0 0 30px var(--pulse-color);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 var(--pulse-color), 0 0 0 30px var(--pulse-color);
+    }
+}
+/* .notify{
+    /* color: rgba(0, 0, 0, 0.8); * /
+	box-shadow: 0px 0px 20px 5px rgba(245, 245, 245, .8);
+	animation: animate 3.2s infinite;
+}
+@keyframes animate {
+	0% {
+		-moz-box-shadow: 0px 0px 20px 5px rgba(245, 245, 245, .8);
+		box-shadow: 0px 0px 20px 5px rgba(245, 245, 245, .8);
+		color: rgba(0, 0, 0, 1);
+	}
+	70% {
+		-moz-box-shadow: 0px 0px 20px 5px rgba(245, 245, 245, 0);
+		box-shadow: 0px 0px 20px 5px rgba(245, 245, 245, 0);
+	}
+	100% {
+		-moz-box-shadow: 0px 0px 20px 5px rgba(245, 245, 245, .8);
+		box-shadow: 0px 0px 20px 5px rgba(245, 245, 245, .8);
+		color: rgba(0, 0, 0, 1);
+	}
+} */

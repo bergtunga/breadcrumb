@@ -8,7 +8,7 @@ import { LoginService } from 'src/app/auth/login.service';
 })
 export class UserinfoComponent implements OnInit {
 
-  constructor(private loginManager: LoginService) { }
+  constructor(public loginManager: LoginService) { }
 
   ngOnInit(): void {
   }
