@@ -20,9 +20,6 @@
     /* flex-direction: column;
     display: flex; * /
 }*/
-:root {
-    
-}
 .notify {
     animation: animate 3s linear infinite
 }
