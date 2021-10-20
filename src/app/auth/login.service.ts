@@ -20,7 +20,7 @@ export class LoginService {
   user$: Observable<User | null>;
   username: String | null = null; 
   welcomeName: String | null = null; 
-  id: String | null = null;  
+  id: string | null = null;  
 
   constructor(private auth: Auth, private router: Router) {
     this.user$ = user(this.auth);
