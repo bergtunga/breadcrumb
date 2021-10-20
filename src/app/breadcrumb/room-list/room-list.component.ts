@@ -19,7 +19,6 @@ export class RoomListComponent implements OnInit {
   ngOnInit(): void {
   }
   onSubmit(form: NgForm): void {
-    console.log(form);
     let newValue = form.value["room-name"];
     let index = this.rooms.indexOf(newValue);
     if(index === -1){

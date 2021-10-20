@@ -1,2 +1,9 @@
-<p>message works!</p>
-<button class="btn btn-primary" (click)="sendMessage()">Send!</button>
+<form class="d-flex needs-validation g-2 align-items-end justify-content-between" (ngSubmit)="sendMessage(f)" #f="ngForm">
+    <div class="m-2">
+        <label for="message-content" class="form-label">Message</label>
+        <input type="text" class="form-control" id="message-content" name="message-content" ngModel required>
+    </div>
+    <div class="m-2">
+        <button class="btn btn-primary" type="submit" [disabled]="!f.valid">Send</button>
+    </div>
+</form>

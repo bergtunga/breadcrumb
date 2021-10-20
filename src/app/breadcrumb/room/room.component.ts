@@ -29,7 +29,7 @@ export class RoomComponent implements OnInit {
         //console.log("docs",doc);
         if(doc.addNotRemove){
           this.crumbs.push(doc.m);
-          this.crumbs.sort(Message.invertCompareFn);
+          this.crumbs.sort(Message.compareFn);
           //console.log("updated: ", this.i++);
         }else {
           for(let i = 0; i < this.crumbs.length; i++){

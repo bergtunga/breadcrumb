@@ -68,8 +68,10 @@ export class RoomService {
     //addDoc(room, {name: "1", path: id });
   }
   getCrumbs(room: string): Observable<MessageChange>{
-    if(this.crumbService)//do cleanup
+    if(this.crumbService){//do cleanup
       this.crumbService.unsubscribe();
+      this.isMember = false;
+    }
     this.crumbService = new CrumbHelper(room, this.fs);
     return this.crumbService.crumbObserver;
   }
@@ -239,7 +241,6 @@ class CrumbHelper{
     if(! link){
       console.log(Error("unidentified user " + user));
     }else {
-    if(link.lastData){
       //check if add or remove.
       let addList: Message[] = [];
       let removeList: Message[] = [];
@@ -248,21 +249,21 @@ class CrumbHelper{
         if(newItem.time)
           addList.push(newItem);
       }
-      for(let jter in link.lastData){
-        let oldDataPost = link.lastData[jter] as Message;
-        if(!oldDataPost.time)
-          continue;
-        let contained = false;
-        for(let i = 0; i < addList.length; i++){
-          if(Message.equals(addList[i], oldDataPost)){
-            addList.splice(i, 1);
-            contained = true;
-            break;
+      if(link.lastData)
+        for(let jter in link.lastData){
+          let oldDataPost = link.lastData[jter] as Message;
+          if(oldDataPost.time){
+            let contained = false;
+            for(let i = 0; i < addList.length && !contained; i++){
+              if(Message.equals(addList[i], oldDataPost)){
+                addList.splice(i, 1);
+                contained = true;
+              }
+            }
+            if(!contained)
+              removeList.push(oldDataPost);
           }
         }
-        if(!contained)
-          removeList.push(oldDataPost);
-      }
       for(let change of addList){
         change.author = author;
         for(let sub of this.subscribers){
@@ -274,19 +275,7 @@ class CrumbHelper{
           sub.next(new MessageChange(change, false));
         }
       }
-    }else{//New, add all
-      for(let sub of this.subscribers ){
-        for(let iter in doc){
-          doc[iter].author = author;
-          sub.next(new MessageChange(doc[iter] as Message, true));
-        }
-      }
-    }
     link.lastData = doc;
-    //console.log(doc, " by ", user);
-
-
-    
   }}
   addSubscriber = (sub: Subscriber<MessageChange>) =>{
     const index = this.subscribers.length;
