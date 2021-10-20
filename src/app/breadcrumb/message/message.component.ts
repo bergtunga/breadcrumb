@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { RoomService } from '../room.service';
+import { ActivatedRoute, Params } from '@angular/router';
 
 @Component({
   selector: 'app-message',
@@ -8,12 +9,14 @@ import { RoomService } from '../room.service';
 })
 export class MessageComponent implements OnInit {
 
-  constructor(private rs: RoomService) { }
-
+  constructor(private rs: RoomService, private rt: ActivatedRoute) { }
+  activeRoom = 'General';
   ngOnInit(): void {
-    
+    this.rt.params.subscribe((params: Params) =>{
+      this.activeRoom = params['roomID'];
+    });
   }
   sendMessage(){
-    this.rs.makePost("abc123", "General");
+    this.rs.makePost("abc123", this.activeRoom);
   }
 }

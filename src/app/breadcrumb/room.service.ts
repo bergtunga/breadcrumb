@@ -27,6 +27,10 @@ export class RoomService {
 
   constructor(private fs: Firestore, private user: LoginService) {  }
 
+  madePost(crumb: Message){
+    return crumb.author === this.user.id;
+  }
+
   async makePost(content: String, room: String, encrypt = 0, iv?: string, key?: string){
 
     //Check participation
@@ -34,11 +38,14 @@ export class RoomService {
       //First check, then add
       let roomDoc = doc(this.fs, "Rooms/" + room)
       let participantList = (await firstValueFrom(docData(roomDoc)));
-      let uid = this.user.id as string
-      if(!participantList[uid]){
+      let uid = this.user.id as string;
+      if(!participantList || !participantList[uid]){
         let j: {[x:string]: any} = {};
         j[uid] = doc(this.fs, uid + "/" + room);
-        updateDoc(roomDoc, j);
+        if(participantList)
+          updateDoc(roomDoc, j);
+        else
+          setDoc(roomDoc, j);
       }
       this.isMember = true;
     }
@@ -46,17 +53,23 @@ export class RoomService {
     let userDocs = doc(this.fs, this.user.id+"/" + room);
     firstValueFrom(docData(userDocs)).then((docData) => {
       console.log("data: ",docData);
-      let i = 1;;
-      for(; docData[i]; i++);
+      let i = 1;
+      if(docData)
+        while(docData[i]) i++;
       let j: {[x:string]: any} = {};
       j['' + i] = {message: content, time:serverTimestamp()};
-      updateDoc(userDocs, j);
+      if(docData)
+        updateDoc(userDocs, j);
+      else
+        setDoc(userDocs, j);
     })
     
 //    let id = (await addDoc(this.userCollection, {General:{message: content, at: serverTimestamp()}})).id;
     //addDoc(room, {name: "1", path: id });
   }
   getCrumbs(room: string): Observable<MessageChange>{
+    if(this.crumbService)//do cleanup
+      this.crumbService.unsubscribe();
     this.crumbService = new CrumbHelper(room, this.fs);
     return this.crumbService.crumbObserver;
   }
@@ -264,7 +277,7 @@ class CrumbHelper{
     }else{//New, add all
       for(let sub of this.subscribers ){
         for(let iter in doc){
-          doc[iter].author = user;
+          doc[iter].author = author;
           sub.next(new MessageChange(doc[iter] as Message, true));
         }
       }

@@ -1,10 +1,24 @@
-.example-button {
-    display: block;
-    margin: 80px auto 400px;
-  }
-  
-  .example-container {
-    height: 200px;
-    overflow: auto;
-    border: 1px solid #ccc;
-  }
+.message {
+  /* padding: 5px; 
+  border-radius: 1em 1em 1em .5em;*/
+  text-align: left;
+  margin-right: 10em;
+}
+
+.message-content {
+  background-color: rgb(1, 1, 161);
+  color: rgb(125, 125, 173);
+  margin:7px;
+  padding: 7px 12px;
+  border-radius: 1em 1em 1em .35em;
+}
+
+.sent > .message-content {
+  border-radius: 1em 1em .35em 1em !important;
+}
+
+.sent {
+  margin-right: auto;
+  margin-left: 10em !important;
+  text-align: right !important;
+}
