@@ -20,6 +20,7 @@
     /* flex-direction: column;
     display: flex; * /
 }*/
+/*https://bbbootstrap.com/snippets/bootstrap-pulse-animation-css-effect-78552205*/
 .notify {
     animation: animate 3s linear infinite
 }
@@ -40,6 +41,7 @@
         box-shadow: 0 0 0 0 var(--pulse-color), 0 0 0 30px var(--pulse-color);
     }
 }
+/*https://jsfiddle.net/u6f5phz3/3/*/
 /* .notify{
     /* color: rgba(0, 0, 0, 0.8); * /
 	box-shadow: 0px 0px 20px 5px rgba(245, 245, 245, .8);
