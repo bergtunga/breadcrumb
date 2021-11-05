@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
+import { SettingsService } from '../settings/settings.service';
 
 @Component({
   selector: 'app-room-list',
@@ -9,20 +10,17 @@ import { NgForm } from '@angular/forms';
 export class RoomListComponent implements OnInit {
   showForm: boolean =  false;
   notify: Number = -1;
-  constructor() { }
-  rooms: string[] = [
-    "General",
-    "test1",
-    "test2"
-  ];
+  constructor(private settings: SettingsService) { }
+  rooms: string[] = [ ];
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    this.rooms = await this.settings.getRooms();
   }
   onSubmit(form: NgForm): void {
     let newValue = form.value["room-name"];
     let index = this.rooms.indexOf(newValue);
     if(index === -1){
-      this.rooms.push();
+      this.rooms.push(newValue);
     }else{
       this.notify = index;
       setTimeout(() =>{this.notify = -1;}, 3000)

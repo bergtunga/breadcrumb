@@ -195,13 +195,12 @@ class CrumbHelper{
   userLinks: UserLink[];
   subscribers: Subscriber<MessageChange>[];
   crumbObserver: Observable<MessageChange>;
-  roomName: string;
-  constructor(room: string, fs: Firestore){
+
+  constructor(private roomName: string, private fs: Firestore){
     this.userLinks = [];
     this.subscribers = [];
     this.primarySub = undefined;
-    this.roomName = room;
-    let data = doc(fs, "Rooms/" + room);
+    let data = doc(fs, "Rooms/" + roomName);
     const participantContents = docData(data); 
     this.roomObserver = participantContents;
     this.crumbObserver = new Observable<MessageChange>(this.addSubscriber);
@@ -225,14 +224,24 @@ class CrumbHelper{
         //Creates a function that pushes both the user and their posts to the group
       let subscription = userPosts.subscribe(pushWithUser);
         // observes the user with the created function.
-      this.userLinks.push(new UserLink(user.path, subscription));
+      const link = new UserLink(user.path, subscription);
+
+      let fp = firstValueFrom(docData(doc(this.fs, link.getUserName()+"/settings")));
+      fp.then((a)=>{
+        console.log(a);
+        if(a && a['publicName']){
+        link.name = a['publicName'];
+      }
+      });
+      
+      this.userLinks.push(link);
         //Adds the user and the subscription to the maintained list.
     }
   }
 
-  doPush = (doc: DocumentData, user: string) => {
+
+  doPush = async (participantCrumbs: DocumentData, user: string) => {
     let link: UserLink | undefined;
-    let author = user.slice(0, -this.roomName.length-1);
     for(let participant of this.userLinks){
       if(participant.userDataRef === user){
         link = participant;
@@ -241,15 +250,16 @@ class CrumbHelper{
     if(! link){
       console.log(Error("unidentified user " + user));
     }else {
+      let author = link.getUserName();
       //check if add or remove.
       let addList: Message[] = [];
       let removeList: Message[] = [];
-      for(let iter in doc){
-        let newItem = doc[iter] as Message;
+      for(let iter in participantCrumbs){
+        let newItem = participantCrumbs[iter] as Message;
         if(newItem.time)
           addList.push(newItem);
       }
-      if(link.lastData)
+      if(link.lastData){
         for(let jter in link.lastData){
           let oldDataPost = link.lastData[jter] as Message;
           if(oldDataPost.time){
@@ -264,6 +274,7 @@ class CrumbHelper{
               removeList.push(oldDataPost);
           }
         }
+      }
       for(let change of addList){
         change.author = author;
         for(let sub of this.subscribers){
@@ -275,7 +286,7 @@ class CrumbHelper{
           sub.next(new MessageChange(change, false));
         }
       }
-    link.lastData = doc;
+    link.lastData = participantCrumbs;
   }}
   addSubscriber = (sub: Subscriber<MessageChange>) =>{
     const index = this.subscribers.length;
@@ -292,8 +303,13 @@ class CrumbHelper{
 }
 class UserLink{
   lastData: DocumentData | undefined;
-  constructor(public userDataRef: string, public sub: Subscription){  }
-
+  constructor(public userDataRef: string, public sub: Subscription, public name?:string){  }
+  getUserName = (): string => {
+    if(this.name)
+      return this.name;
+    else
+      return this.userDataRef.substring(0, this.userDataRef.lastIndexOf("/"));
+  }
 }
 export class MessageChange{
   constructor(public m: Message, public addNotRemove: boolean){}
