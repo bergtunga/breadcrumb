@@ -6,6 +6,7 @@ import { Firestore, doc, collection, Timestamp, serverTimestamp, DocumentData, D
 import { RoomService, Message, MessageChange } from '../room.service';
 
 import { firstValueFrom, Observable,  Subscriber, Subscription } from 'rxjs';
+import { user } from 'rxfire/auth';
 
 @Component({
   selector: 'app-room',
@@ -17,48 +18,48 @@ export class RoomComponent implements OnInit, OnDestroy {
   constructor(private fs: Firestore, private rs: RoomService, private rt: ActivatedRoute) { }
   
   @Output() crumbs: Message[] = []; //TODO: Replace with B-Tree
-  sub: Subscription | undefined;
+  //sub: Subscription | undefined;
   crumbUpdater: CrumbHelper | undefined;
 
   ngOnInit(): void {
     this.rt.params.subscribe((params:Params) =>{
       //Subscribe to the activated route parameters.
 
-      if(this.sub) this.sub.unsubscribe();
+      if(this.crumbUpdater) this.crumbUpdater.dispose();
       //If a subscription to a previous route already exists, dispose of it.
 
       this.crumbs = [];
       let room = params["roomID"];
-      this.crumbUpdater = new CrumbHelper(room, this.fs);
-      this.sub = this.crumbUpdater
-        //Get the crumbs of the current room.
-        .subscribe((doc:MessageChange) => {
-          //And subscribe to them.
-          
-          if(doc.addOrRemove === MessageChange.ADD){
-            this.crumbs.push(doc.m);
-            this.crumbs.sort(Message.compareFn);
-            //Add the new message and sort the list.
-          }else if(doc.addOrRemove === MessageChange.REMOVE){
-            //If it should remove the crumb.
-            for(let i = 0; i < this.crumbs.length; i++){
-              //Loop through crumbs
+      this.crumbUpdater = new CrumbHelper(room, this.fs, (doc:MessageChange) => {
+        //And subscribe to them.
+        
+        if(doc.addOrRemove === MessageChange.ADD){
+          this.crumbs.push(doc.m);
+          this.crumbs.sort(Message.compareFn);
+          //Add the new message and sort the list.
+        }else if(doc.addOrRemove === MessageChange.REMOVE){
+          //If it should remove the crumb.
+          for(let i = 0; i < this.crumbs.length; i++){
+            //Loop through crumbs
 
-              if(Message.equals(doc.m, this.crumbs[i])){
-                this.crumbs.splice(i, 1);
-                break;
-                //If the messages are the same, remove it from the list.
-              }
+            if(Message.equals(doc.m, this.crumbs[i])){
+              this.crumbs.splice(i, 1);
+              break;
+              //If the messages are the same, remove it from the list.
             }
           }
-        });
+        }
+      });
+      //this.sub = this.crumbUpdater.subscribe();
+        //Get the crumbs of the current room.
+        
     
     });
   }
 
   ngOnDestroy(): void {
     if(this.crumbUpdater){//do cleanup
-      this.crumbUpdater.unsubscribe();
+      this.crumbUpdater.dispose();
     }
   }
 
@@ -72,17 +73,15 @@ class CrumbHelper{
   private primarySub: Subscription;
   //Subscription observing who is in the room.
 
-
   private userLinks: UserLink[];
-  private subscribers: Subscriber<MessageChange>[];
-  private crumbObserver: Observable<MessageChange>;
+  //Subscriptions observing users posts.
 
-  constructor(private roomName: string, private fs: Firestore){
+
+  constructor(private roomName: string, private fs: Firestore, private eventListener: ((event: MessageChange) => void)){
     this.userLinks = [];
-    this.subscribers = [];
     let roomObserver = docData(doc(fs, "Rooms/" + roomName)); //Who is in the room.
     
-    this.crumbObserver = new Observable<MessageChange>(this.addSubscriber);
+    //this.crumbObserver = new Observable<MessageChange>(this.addSubscriber);
 
     this.primarySub = roomObserver.subscribe(this.updateUsers);
   }
@@ -169,6 +168,7 @@ class CrumbHelper{
       onAdd(elem);
     }
   }
+  //Called to extract messages from a user's documentdata
   static getMessages(doc: DocumentData | undefined) : Message[]{
     let result: Message[] = [];
     if(doc)
@@ -178,6 +178,7 @@ class CrumbHelper{
       }
     return result;
   }
+  //Called on an update of one of the user's messages.
   doPush = async (participantCrumbs: DocumentData, user: string) => {
     let link: UserLink | undefined;
     for(let participant of this.userLinks){
@@ -200,29 +201,17 @@ class CrumbHelper{
       CrumbHelper.updateLists(newList, oldList, Message.equals,
         (add: Message): void => {
           add.author = author;
-          for(let sub of this.subscribers){
-            sub.next(new MessageChange(add, true));
-          }
+            this.eventListener(new MessageChange(add, true));
         },
         (remove: Message) => {
           remove.author = author;
-          for(let sub of this.subscribers){
-            sub.next(new MessageChange(remove, false));
-          }
+            this.eventListener(new MessageChange(remove, false));
         });
 
     link.lastData = participantCrumbs;
     }
   }
-  addSubscriber = (sub: Subscriber<MessageChange>) =>{
-    const index = this.subscribers.length;
-    this.subscribers.push(sub);
-    return () => {this.subscribers.splice(index, 1)};
-  }
-  subscribe = (updater: (value: MessageChange) => void): Subscription =>{
-    return this.crumbObserver.subscribe(updater);
-  }
-  unsubscribe = () => {
+  dispose = () => {
     this.primarySub.unsubscribe();
     for(let user of this.userLinks){
       user.sub.unsubscribe();
