@@ -19,19 +19,16 @@ import { LoginService } from '../auth/login.service';
   providedIn: 'root'
 })
 export class RoomService {
-  //public userCollection: CollectionReference<DocumentData>;
-
   public encryptions = {};
-  crumbService: CrumbHelper | undefined;
   isMember = false;
 
   constructor(private fs: Firestore, private user: LoginService) {  }
 
-  madePost(crumb: Message){
+  madePost = (crumb: Message) => {
     return crumb.author === this.user.id;
   }
 
-  async makePost(content: String, room: String, encrypt = 0, iv?: string, key?: string){
+  makePost = async (content: String, room: String, encrypt = 0, iv?: string, key?: string) => {
 
     //Check participation
     if(!this.isMember){
@@ -52,7 +49,7 @@ export class RoomService {
     //this.fs.app.automaticDataCollectionEnabled
     let userDocs = doc(this.fs, this.user.id+"/" + room);
     firstValueFrom(docData(userDocs)).then((docData) => {
-      console.log("data: ",docData);
+      //console.log("data: ",docData);
       let i = 1;
       if(docData)
         while(docData[i]) i++;
@@ -67,15 +64,8 @@ export class RoomService {
 //    let id = (await addDoc(this.userCollection, {General:{message: content, at: serverTimestamp()}})).id;
     //addDoc(room, {name: "1", path: id });
   }
-  getCrumbs(room: string): Observable<MessageChange>{
-    if(this.crumbService){//do cleanup
-      this.crumbService.unsubscribe();
-      this.isMember = false;
-    }
-    this.crumbService = new CrumbHelper(room, this.fs);
-    return this.crumbService.crumbObserver;
-  }
-  /* Not Symmeretic, wont work * /
+  
+  /* Not Symmeretic, wont work */
   AESCTR =  {
     genCounter(): Uint8Array{
       return window.crypto.getRandomValues(new Uint8Array(16));
@@ -88,7 +78,7 @@ export class RoomService {
     /*
     Get the encoded message, encrypt it and display a representation
     of the ciphertext in the "Ciphertext" element.
-    * /
+    */
     async encryptMessage(key: CryptoKey, plaintext: string, counter: Uint8Array) : Promise<BufferSource> {
       let encoded = new TextEncoder().encode(plaintext)
       // The counter block value must never be reused with a given key.
@@ -103,7 +93,7 @@ export class RoomService {
     /*
     Fetch the ciphertext and decrypt it.
     Write the decrypted message into the "Decrypted" box.
-    * /
+    */
     async decryptMessage(key: CryptoKey, cyphertext: BufferSource, counter: Uint8Array): Promise<string> {
       let decrypted = await window.crypto.subtle.decrypt(
         this.getParams(counter),
@@ -118,7 +108,7 @@ export class RoomService {
     /*
     Generate an encryption key, then set up event listeners
     on the "Encrypt" and "Decrypt" buttons.
-    * /
+    */
     key: window.crypto.subtle.generateKey(
       {   name: "AES-CTR",
           length: 256
@@ -136,7 +126,7 @@ export class RoomService {
     /*
     Get the encoded message, encrypt it and display a representation
     of the ciphertext in the "Ciphertext" element.
-    * /
+    */
     async encryptMessage(message: string, key: CryptoKey, iv: Uint8Array) {
       let encoded = new TextEncoder().encode(message);
       // The iv must never be reused with a given key.
@@ -153,7 +143,7 @@ export class RoomService {
     /*
     Fetch the ciphertext and decrypt it.
     Write the decrypted message into the "Decrypted" box.
-    * /
+    */
     async decryptMessage(ciphertext: BufferSource, key:CryptoKey, iv: Uint8Array) {
       let decrypted = await window.crypto.subtle.decrypt(
         {
@@ -171,7 +161,7 @@ export class RoomService {
     /*
     Generate an encryption key, then set up event listeners
     on the "Encrypt" and "Decrypt" buttons.
-    * /
+    */
     key : window.crypto.subtle.generateKey(
       {
           name: "AES-CBC",
@@ -188,131 +178,13 @@ export class RoomService {
   toHexString = (bytes: Uint8Array) =>
   bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
   /* */
+  
 }
-class CrumbHelper{
-  primarySub: Subscription | undefined;
-  roomObserver: Observable<DocumentData>;
-  userLinks: UserLink[];
-  subscribers: Subscriber<MessageChange>[];
-  crumbObserver: Observable<MessageChange>;
 
-  constructor(private roomName: string, private fs: Firestore){
-    this.userLinks = [];
-    this.subscribers = [];
-    this.primarySub = undefined;
-    let data = doc(fs, "Rooms/" + roomName);
-    const participantContents = docData(data); 
-    this.roomObserver = participantContents;
-    this.crumbObserver = new Observable<MessageChange>(this.addSubscriber);
-    this.primarySub = this.roomObserver.subscribe(this.updateUsers);
-  }
-
-  //Called on an update of the room, which indicates a change in the
-  // participants.
-  updateUsers = (data: DocumentData) => {
-    outer: for(let lnk in data){
-      let user = data[lnk] as DocumentReference;
-      for(let existingMember of this.userLinks){
-        if(user.path == existingMember.userDataRef)
-          continue outer;
-      } // If it is already a member, do not add.
-        //TODO: implement removing.
-
-      let userPosts = docData(user);
-        //Retrieves the document that contains the user posts
-      let pushWithUser = (doc:DocumentData) => {this.doPush(doc, user.path);};
-        //Creates a function that pushes both the user and their posts to the group
-      let subscription = userPosts.subscribe(pushWithUser);
-        // observes the user with the created function.
-      const link = new UserLink(user.path, subscription);
-
-      let fp = firstValueFrom(docData(doc(this.fs, link.getUserName()+"/settings")));
-      fp.then((a)=>{
-        console.log(a);
-        if(a && a['publicName']){
-        link.name = a['publicName'];
-      }
-      });
-      
-      this.userLinks.push(link);
-        //Adds the user and the subscription to the maintained list.
-    }
-  }
-
-
-  doPush = async (participantCrumbs: DocumentData, user: string) => {
-    let link: UserLink | undefined;
-    for(let participant of this.userLinks){
-      if(participant.userDataRef === user){
-        link = participant;
-      }
-    }
-    if(! link){
-      console.log(Error("unidentified user " + user));
-    }else {
-      let author = link.getUserName();
-      //check if add or remove.
-      let addList: Message[] = [];
-      let removeList: Message[] = [];
-      for(let iter in participantCrumbs){
-        let newItem = participantCrumbs[iter] as Message;
-        if(newItem.time)
-          addList.push(newItem);
-      }
-      if(link.lastData){
-        for(let jter in link.lastData){
-          let oldDataPost = link.lastData[jter] as Message;
-          if(oldDataPost.time){
-            let contained = false;
-            for(let i = 0; i < addList.length && !contained; i++){
-              if(Message.equals(addList[i], oldDataPost)){
-                addList.splice(i, 1);
-                contained = true;
-              }
-            }
-            if(!contained)
-              removeList.push(oldDataPost);
-          }
-        }
-      }
-      for(let change of addList){
-        change.author = author;
-        for(let sub of this.subscribers){
-          sub.next(new MessageChange(change, true));
-        }
-      }for(let change of removeList){
-        change.author = author;
-        for(let sub of this.subscribers){
-          sub.next(new MessageChange(change, false));
-        }
-      }
-    link.lastData = participantCrumbs;
-  }}
-  addSubscriber = (sub: Subscriber<MessageChange>) =>{
-    const index = this.subscribers.length;
-    this.subscribers.push(sub);
-    return () => {this.subscribers.splice(index, 1)};
-  }
-  unsubscribe = () => {
-    if(this.primarySub)
-      this.primarySub.unsubscribe();
-    for(let user of this.userLinks){
-      user.sub.unsubscribe();
-    }
-  }
-}
-class UserLink{
-  lastData: DocumentData | undefined;
-  constructor(public userDataRef: string, public sub: Subscription, public name?:string){  }
-  getUserName = (): string => {
-    if(this.name)
-      return this.name;
-    else
-      return this.userDataRef.substring(0, this.userDataRef.lastIndexOf("/"));
-  }
-}
 export class MessageChange{
-  constructor(public m: Message, public addNotRemove: boolean){}
+  static readonly ADD = true;
+  static readonly REMOVE = false;
+  constructor(public m: Message, public addOrRemove: boolean){}
 }
 export class Message{
   private constructor(){this.message = ""; this.time=serverTimestamp() as Timestamp; }
