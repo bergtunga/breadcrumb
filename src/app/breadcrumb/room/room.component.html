@@ -1,5 +1,5 @@
 
-<div class="message-area h-50">
+<div class="">
 
     <div *ngFor="let crumb of crumbs"
         class="message"
@@ -8,7 +8,7 @@
             @
         </span>
         <span class="d-inline-block message-content"  tabindex="0" data-bs-toggle="tooltip" title="{{crumb.author}}">
-            
+
             {{' '+ crumb.message}}
         </span>
     </div>
