@@ -5,6 +5,7 @@ import { SettingsService } from '../settings/settings.service';
 @Component({
   selector: 'app-room-list',
   templateUrl: './room-list.component.html',
+  host: {'class':"col-3 h-100 d-flex flex-column"},
   styleUrls: ['./room-list.component.css']
 })
 export class RoomListComponent implements OnInit {

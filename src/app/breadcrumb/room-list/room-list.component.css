@@ -1,3 +1,8 @@
+.breadcrumb-content {
+    height: 80vh;
+    /* flex-grow: 1; */
+    max-height: 90vh;
+}
 .room-list-link {
     /* margin: 5px 5px 0px 5px; */
     text-align: left;

@@ -20,16 +20,17 @@ export class LoginService {
   user$: Observable<User | null>;
   username: String | null = null; 
   welcomeName: String | null = null; 
-  id: string | null = null;  
+  id: string | null = null;
 
   constructor(private auth: Auth, private router: Router) {
     this.user$ = user(this.auth);
     firstValueFrom(this.user$).then((cu) =>{
-      console.log(cu);
+      
       if(!cu){
         this.doLogout();
-        console.log("shouldnt happen");
+        //This happens when page loads and user is not logged in.
       }else{
+        console.log(cu);
         this.username = cu.email;
         this.welcomeName = cu.displayName;
         this.id = cu.uid;

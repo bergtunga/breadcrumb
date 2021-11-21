@@ -6,11 +6,11 @@ import { Firestore, doc, collection, Timestamp, serverTimestamp, DocumentData, D
 import { RoomService, Message, MessageChange } from '../room.service';
 
 import { firstValueFrom, Observable,  Subscriber, Subscription } from 'rxjs';
-import { user } from 'rxfire/auth';
 
 @Component({
   selector: 'app-room',
   templateUrl: './room.component.html',
+  host: {'class':'flex-grow-1'},
   styleUrls: ['./room.component.css']
 })
 export class RoomComponent implements OnInit, OnDestroy {
@@ -76,14 +76,13 @@ class CrumbHelper{
   private userLinks: UserLink[];
   //Subscriptions observing users posts.
 
-
   constructor(private roomName: string, private fs: Firestore, private eventListener: ((event: MessageChange) => void)){
     this.userLinks = [];
-    let roomObserver = docData(doc(fs, "Rooms/" + roomName)); //Who is in the room.
+    let roomObserver = docData(doc(fs, "Rooms/" + roomName));
+    //document observable for members of the room.
     
-    //this.crumbObserver = new Observable<MessageChange>(this.addSubscriber);
-
     this.primarySub = roomObserver.subscribe(this.updateUsers);
+    //Subscribe to who is in the room
   }
 
   //Called on an update of the room, which indicates a change in the

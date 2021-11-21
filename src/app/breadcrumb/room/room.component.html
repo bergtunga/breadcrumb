@@ -1,13 +1,18 @@
-<div *ngFor="let crumb of crumbs"
-    class="message"
-    [class.sent]="isSelf(crumb)">
-    <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" title="{{crumb.time}}">
-        @
-    </span>
-    <span class="d-inline-block message-content"  tabindex="0" data-bs-toggle="tooltip" title="{{crumb.author}}">
-        
-        {{' '+ crumb.message}}
-    </span>
-</div>
 
-<app-message></app-message>
+<div class="message-area h-50">
+
+    <div *ngFor="let crumb of crumbs"
+        class="message"
+        [class.sent]="isSelf(crumb)">
+        <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" title="{{crumb.time}}">
+            @
+        </span>
+        <span class="d-inline-block message-content"  tabindex="0" data-bs-toggle="tooltip" title="{{crumb.author}}">
+            
+            {{' '+ crumb.message}}
+        </span>
+    </div>
+</div>
+<app-message
+[height] ="200"
+></app-message>

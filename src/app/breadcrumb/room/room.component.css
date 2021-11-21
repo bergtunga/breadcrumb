@@ -22,3 +22,6 @@
   margin-left: 10em !important;
   text-align: right !important;
 }
+.message-area {
+  overflow-y: scroll;
+}

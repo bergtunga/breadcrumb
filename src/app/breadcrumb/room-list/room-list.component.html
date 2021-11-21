@@ -1,49 +1,36 @@
-
-<div class="row vh-100 d-flex">
-    <div class="col-3">
-        <div class="d-flex justify-content-between p-2">
-            <span>Room list</span>
-            <span>
-                <button class="btn btn-info" (click)="toggleAdd()">
-                    <span style="font-size: larger; font-weight: bold;">+</span>
-                    Add room
-                </button>
-            </span>
+<!-- 'class':"col-3 h-100 d-flex flex-column" -->
+<div class="d-flex justify-content-between p-2">
+    <span>Room list</span>
+    <span>
+        <button class="btn btn-info" (click)="toggleAdd()">
+            <span style="font-size: larger; font-weight: bold;">+</span>
+            Add room
+        </button>
+    </span>
+</div>
+<div *ngIf="this.showForm">
+    <form class="d-flex needs-validation g-2 align-items-end justify-content-between" (ngSubmit)="onSubmit(f)" #f="ngForm">
+        <div class="m-2">
+            <label for="room-name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="room-name" value="General" name="room-name" ngModel required>
         </div>
-        <div *ngIf="this.showForm">
-            <form class="d-flex needs-validation g-2 align-items-end justify-content-between" (ngSubmit)="onSubmit(f)" #f="ngForm">
-                <div class="m-2">
-                    <label for="room-name" class="form-label">Name</label>
-                    <input type="text" class="form-control" id="room-name" value="General" name="room-name" ngModel required>
-                </div>
-                <div class="m-2">
-                    <button class="btn btn-primary" type="submit" [disabled]="!f.valid">Ok</button>
-                </div>
-            </form>
+        <div class="m-2">
+            <button class="btn btn-primary" type="submit" [disabled]="!f.valid">Ok</button>
         </div>
-        <div class="app-content d-flex flex-column h-75">
-            <button
-                *ngFor="let room of rooms; let i = index"
-                routerLink="{{room}}"
-                class="btn btn-secondary room-link room-list-link p-2 m-2 pulse"
-                
-                [ngClass]="{'notify': notify === i}"
-                >
-                {{room}}
-            </button>
-            <button routerLink="settings"
-                class="btn room-link room-list-link row settings-link mt-auto p-2">
-                Settings
-            </button>
-        </div>
-    </div>
-    <div class="col-9">
-        <router-outlet></router-outlet>
-        <!-- <div class="row">
-            <app-room></app-room>
-        </div>
-        <div class="row">
-            <app-message></app-message>
-        </div> -->
-    </div>
+    </form>
+</div>
+<div class="d-flex flex-column flex-grow-1 w-100">
+    <button
+        *ngFor="let room of rooms; let i = index"
+        routerLink="{{room}}"
+        class="btn btn-secondary room-link room-list-link p-2 m-2 pulse"
+        
+        [ngClass]="{'notify': notify === i}"
+        >
+        {{room}}
+    </button>
+    <button routerLink="settings"
+        class="btn row room-link room-list-link settings-link m-2 mt-auto p-2">
+        Settings
+    </button>
 </div>

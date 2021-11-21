@@ -76,8 +76,7 @@ export class RoomService {
     },
     
     /*
-    Get the encoded message, encrypt it and display a representation
-    of the ciphertext in the "Ciphertext" element.
+    Get the encoded message, encrypt it
     */
     async encryptMessage(key: CryptoKey, plaintext: string, counter: Uint8Array) : Promise<BufferSource> {
       let encoded = new TextEncoder().encode(plaintext)
@@ -92,7 +91,6 @@ export class RoomService {
   
     /*
     Fetch the ciphertext and decrypt it.
-    Write the decrypted message into the "Decrypted" box.
     */
     async decryptMessage(key: CryptoKey, cyphertext: BufferSource, counter: Uint8Array): Promise<string> {
       let decrypted = await window.crypto.subtle.decrypt(
