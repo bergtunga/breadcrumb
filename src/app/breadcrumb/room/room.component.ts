@@ -10,7 +10,7 @@ import { firstValueFrom, Observable,  Subscriber, Subscription } from 'rxjs';
 @Component({
   selector: 'app-room',
   templateUrl: './room.component.html',
-  host: {'class':'flex-grow-1'},
+  host: {'class':'d-flex flex-column w-100 h-100'},
   styleUrls: ['./room.component.css']
 })
 export class RoomComponent implements OnInit, OnDestroy {
